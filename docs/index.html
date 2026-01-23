@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEOモバイル価格チェッカー@たまコイン</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FFCE80;
+      --primary-dark: #E5B366;
+      --text: #333333;
+      --text-muted: #666666;
+      --bg: #FAFAFA;
+      --card-bg: #FFFFFF;
+      --border: #E5E5E5;
+      --success: #22C55E;
+      --error: #EF4444;
+      --price-red: #DC2626;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      background-color: var(--primary);
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+    }
+
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      font-size: 0.875rem;
+      opacity: 0.8;
+    }
+
+    /* Main */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* Meta Info */
+    .meta-info {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .meta-info .update-time {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .meta-info .update-time strong {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--text);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background-color: #E5E5E5;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background-color: #D4D4D4;
+    }
+
+    /* Search */
+    .search-section {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-section h2 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-form {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(255, 206, 128, 0.3);
+    }
+
+    /* Products Grid */
+    .products-section h2 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    /* Product Card */
+    .product-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+
+    .product-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .product-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .product-name {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .product-brand {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .product-body {
+      padding: 1rem;
+    }
+
+    .price-highlight {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .price-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .price-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--price-red);
+    }
+
+    .price-value.normal {
+      color: var(--text);
+    }
+
+    .availability {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+    }
+
+    .availability.in-stock {
+      background-color: #DCFCE7;
+      color: #166534;
+    }
+
+    .availability.out-of-stock {
+      background-color: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .fetched-at {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Price Table */
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .price-table th,
+    .price-table td {
+      padding: 0.5rem;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .price-table th {
+      background-color: var(--bg);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .price-table th:first-child,
+    .price-table td:first-child {
+      text-align: left;
+    }
+
+    .price-table .grade-s { background-color: #FEF3C7; }
+    .price-table .grade-a { background-color: #DBEAFE; }
+    .price-table .grade-b { background-color: #DCFCE7; }
+    .price-table .grade-c { background-color: #FEE2E2; }
+    .price-table .grade-d { background-color: #E5E5E5; }
+
+    .price-table .price-1 {
+      color: var(--price-red);
+      font-weight: 700;
+    }
+
+    .product-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .product-footer .btn {
+      flex: 1;
+      justify-content: center;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    /* Footer */
+    .footer {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .footer a {
+      color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .meta-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .search-form {
+        flex-direction: column;
+      }
+
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <img src="favicon.png" alt="たまコイン" class="logo">
+      <div>
+        <h1>GEOモバイル価格チェッカー@たまコイン</h1>
+        <p>在庫切れ商品の価格情報も確認できます</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Meta Info -->
+    <div class="meta-info">
+      <div class="update-time">
+        最終更新: <strong id="lastUpdated">読み込み中...</strong>
+        <span id="productCount"></span>
+      </div>
+      <div>
+        <a href="https://github.com/tamacolet/geo-mobile-price-checker/actions/workflows/scheduled.yml" 
+           target="_blank" class="btn btn-primary">
+          🔄 最新情報を取得
+        </a>
+        <a href="https://tamacoin.net/archives/4043" target="_blank" class="btn btn-secondary">
+          📖 紹介記事を確認
+        </a>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <h2>🔍 商品URLを入力</h2>
+      <form class="search-form" id="searchForm">
+        <input type="url" class="search-input" id="urlInput" 
+               placeholder="https://mvno.geo-mobile.jp/uqmobile/smartphone/..."
+               pattern="https://mvno\.geo-mobile\.jp/.*">
+        <button type="submit" class="btn btn-primary">価格を確認</button>
+      </form>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+        ※ 新しいURLを入力すると、GitHub Actionsで価格を取得します（1〜2分かかります）
+      </p>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+      <h2>📱 キャッシュ済み商品一覧</h2>
+      <div class="products-grid" id="productsGrid">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>価格データを読み込み中...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>このツールはGEOモバイルの公式サービスではありません。</p>
+    <p>データはGEOモバイルのウェブサイトから取得しています。</p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://github.com/tamacolet/geo-mobile-price-checker" target="_blank">GitHub</a>
+      ・
+      <a href="https://tamacoin.net" target="_blank">たまコイン</a>
+    </p>
+  </footer>
+
+  <script>
+    // 価格をフォーマット
+    function formatPrice(price) {
+      if (price === null || price === undefined) return '-';
+      return `¥${price.toLocaleString()}`;
+    }
+
+    // 相対時間を計算
+    function getRelativeTime(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'たった今';
+      if (diffMins < 60) return `${diffMins}分前`;
+      if (diffHours < 24) return `${diffHours}時間前`;
+      if (diffDays < 7) return `${diffDays}日前`;
+      return date.toLocaleDateString('ja-JP');
+    }
+
+    // 商品カードを生成
+    function createProductCard(product) {
+      const info = product.productInfo || {};
+      const isInStock = info.availability === 'InStock';
+      const minPrice = product.minMnpPrice;
+      const isOneYen = minPrice === 1;
+
+      let priceTableHtml = '';
+      if (product.prices && product.prices.length > 0) {
+        priceTableHtml = `
+          <table class="price-table">
+            <thead>
+              <tr>
+                <th>グレード</th>
+                <th>端末価格</th>
+                <th>MNP</th>
+                <th>新規</th>
+                <th>機種変更</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${product.prices.map(p => `
+                <tr class="grade-${p.grade.toLowerCase()}">
+                  <td><strong>${p.grade}</strong> ${p.gradeLabel}</td>
+                  <td>${formatPrice(p.productPrice)}</td>
+                  <td class="${p.mnpPrice === 1 ? 'price-1' : ''}">${formatPrice(p.mnpPrice)}</td>
+                  <td class="${p.newPrice === 1 ? 'price-1' : ''}">${formatPrice(p.newPrice)}</td>
+                  <td>${formatPrice(p.changePrice)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      return `
+        <div class="product-card">
+          <div class="product-header">
+            <div class="product-name">${info.name || product.slug}</div>
+            <div class="product-brand">${info.brand || ''}</div>
+          </div>
+          <div class="product-body">
+            <span class="availability ${isInStock ? 'in-stock' : 'out-of-stock'}">
+              ${isInStock ? '在庫あり' : '在庫切れ'}
+            </span>
+            <div class="price-highlight">
+              <span class="price-label">MNP最安価格</span>
+              <span class="price-value ${isOneYen ? '' : 'normal'}">
+                ${minPrice !== null ? formatPrice(minPrice) : '価格情報なし'}
+              </span>
+            </div>
+            <div class="fetched-at">
+              取得日時: ${getRelativeTime(product.fetchedAt)} (${new Date(product.fetchedAt).toLocaleString('ja-JP')})
+            </div>
+            ${priceTableHtml}
+          </div>
+          <div class="product-footer">
+            <a href="${product.url}" target="_blank" class="btn btn-primary">GEOモバイルで見る</a>
+            <a href="https://tamacoin.net/archives/4043" target="_blank" class="btn btn-secondary">紹介記事</a>
+          </div>
+        </div>
+      `;
+    }
+
+    // データを読み込み
+    async function loadData() {
+      const grid = document.getElementById('productsGrid');
+      const lastUpdatedEl = document.getElementById('lastUpdated');
+      const productCountEl = document.getElementById('productCount');
+
+      try {
+        // メタ情報を読み込み
+        const metaResponse = await fetch('data/meta.json');
+        if (metaResponse.ok) {
+          const meta = await metaResponse.json();
+          lastUpdatedEl.textContent = `${getRelativeTime(meta.lastUpdated)} (${new Date(meta.lastUpdated).toLocaleString('ja-JP')})`;
+          productCountEl.textContent = ` / ${meta.productCount}件の商品`;
+        }
+
+        // 価格データを読み込み
+        const pricesResponse = await fetch('data/prices.json');
+        if (!pricesResponse.ok) {
+          throw new Error('Price data not found');
+        }
+
+        const prices = await pricesResponse.json();
+        const products = Object.values(prices);
+
+        if (products.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p>まだ商品データがありません</p>
+              <p>上のフォームからURLを入力して価格を取得してください</p>
+            </div>
+          `;
+          return;
+        }
+
+        // 商品カードを生成
+        grid.innerHTML = products.map(createProductCard).join('');
+
+      } catch (error) {
+        console.error('Error loading data:', error);
+        grid.innerHTML = `
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p>データの読み込みに失敗しました</p>
+            <p>GitHub Actionsで価格を取得してください</p>
+          </div>
+        `;
+        lastUpdatedEl.textContent = 'データなし';
+      }
+    }
+
+    // 検索フォーム
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const url = document.getElementById('urlInput').value;
+      
+      if (!url.startsWith('https://mvno.geo-mobile.jp/')) {
+        alert('GEOモバイルのURLを入力してください');
+        return;
+      }
+
+      // GitHub Actionsの手動実行ページに遷移
+      const actionsUrl = 'https://github.com/tamacolet/geo-mobile-price-checker/actions/workflows/manual.yml';
+      const message = `以下の手順で価格を取得してください:\n\n1. 「Run workflow」ボタンをクリック\n2. URLを入力: ${url}\n3. 「Run workflow」を実行\n\n1〜2分後にこのページをリロードすると結果が表示されます。`;
+      
+      if (confirm(message + '\n\nGitHub Actionsページを開きますか？')) {
+        window.open(actionsUrl, '_blank');
+      }
+    });
+
+    // 初期読み込み
+    loadData();
+  </script>
+</body>
+</html>

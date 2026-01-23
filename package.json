@@ -1,0 +1,22 @@
+{
+  "name": "geo-mobile-price-checker",
+  "version": "1.0.0",
+  "description": "GEOモバイル価格チェッカー@たまコイン - 在庫切れ商品の価格も取得できるツール",
+  "type": "module",
+  "scripts": {
+    "fetch": "node scripts/fetch-price.mjs",
+    "fetch:all": "node scripts/fetch-all.mjs",
+    "build": "echo 'No build required for static site'"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "fingerprint-injector": "^2.1.0",
+    "fingerprint-generator": "^2.1.0"
+  },
+  "author": "たまコイン",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tamacolet/geo-mobile-price-checker.git"
+  }
+}

@@ -1,0 +1,72 @@
+name: 手動価格取得
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'GEOモバイルの商品URL'
+        required: true
+        default: 'https://mvno.geo-mobile.jp/uqmobile/smartphone/GalaxyS23_SC51D'
+      add_to_watchlist:
+        description: '監視リストに追加する'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  fetch-single:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Fetch price
+        run: npm run fetch -- "${{ github.event.inputs.url }}"
+
+      - name: Add to watchlist
+        if: ${{ github.event.inputs.add_to_watchlist == 'true' }}
+        run: |
+          URL="${{ github.event.inputs.url }}"
+          PRODUCTS_FILE="data/products.json"
+          
+          # products.json が存在しない場合は作成
+          if [ ! -f "$PRODUCTS_FILE" ]; then
+            echo "[]" > "$PRODUCTS_FILE"
+          fi
+          
+          # URLが既に存在するかチェック
+          if ! grep -q "$URL" "$PRODUCTS_FILE"; then
+            # jq がない場合は node で処理
+            node -e "
+              const fs = require('fs');
+              const products = JSON.parse(fs.readFileSync('$PRODUCTS_FILE', 'utf-8'));
+              if (!products.includes('$URL')) {
+                products.push('$URL');
+                fs.writeFileSync('$PRODUCTS_FILE', JSON.stringify(products, null, 2));
+                console.log('Added to watchlist: $URL');
+              }
+            "
+          else
+            echo "URL already in watchlist"
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/
+          git diff --staged --quiet || git commit -m "📱 Fetch price - $(echo '${{ github.event.inputs.url }}' | sed 's/.*smartphone\///')"
+          git push
